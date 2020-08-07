@@ -1,0 +1,417 @@
+<html>
+<style>
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+}
+
+li {
+  float: left;
+} 
+ul li {
+	width: 20%;
+}
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+li a:hover {
+  background-color: #111;
+}
+
+.active{
+	background-color: lightgreen;
+}
+
+.previous {
+  background-color: #f1f1f1;
+  color: black;
+  height: 50px;
+  width: 50px;
+}
+
+.next {
+  background-color: lightgreen;
+  color: white;
+  height: 50px;
+  width: 50px;
+  float: right;
+}
+
+.round {
+  border-radius: 50%;
+}
+
+.chart {
+	width:300px;
+	height:300px;
+	border: 1px solid #4CAF50;
+}
+
+svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 300px;
+  border: 1px solid #4CAF50;
+}
+.salarycapbuttonleft {
+	margin-left: 22%;
+	margin-top: 375px;	
+}
+
+.leftchartlabel{
+	position: absolute;
+	top: 450px;
+	left: 18%;
+}
+.rightchartlabel{
+	position: absolute;
+	top: 450px;
+	left: 62%;
+}
+
+.maintext {
+	position: absolute;
+	width:50%;
+	top 50px;
+	left: 25%;
+	text-align: center;
+	font-family: "Courier New";
+}
+
+</style>
+<script src='/Users/sidsridhar/Downloads/d3/d3.min.js'></script>
+<script>
+	var nav = 1;
+</script>
+<body onload='init()'>
+<ul>
+  <li><a id="nav1" class="active" onclick="navElementClicked(1)">Intro</a></li>
+  <li><a id="nav2" onclick="navElementClicked(2)">1990s</a></li>
+  <li><a id="nav3" onclick="navElementClicked(3)">2000s</a></li>
+  <li><a id="nav4" onclick="navElementClicked(4)">2010s</a></li>
+  <li><a id="nav5" onclick="navElementClicked(5)">Conclusion</a></li>
+</ul>
+<br>
+<div class="maintext" id="maintext">
+	
+</div>
+
+<div>
+<button class="previous round" onclick="prev()">&#8249;</button>
+<button class="next round" onclick="next()">&#8250;</button>
+</div>
+<div id="chartdiv">
+<svg transform="translate(100,150)" class="leftchart"></svg>
+<svg transform="translate(675,150)" class="rightchart"></svg>
+</div>
+<div class="leftchartlabel" id="leftchartlabel">
+<p><b>Average Cost of Team Salary By Year</b></p>
+</div>
+<div class="rightchartlabel" id="rightchartlabel">
+<p><b>Highest Player Salaries in This Decade<b></p>
+</div>
+<div>
+<button class="salarycapbuttonleft" id="salarycapbuttonleft" onclick="salaryCapPress()"> Show Salary Caps! </button>
+</div>
+<script>
+	function prev(){
+		console.log("Nav used to be " + nav.toString());
+		document.getElementById("nav" + nav.toString()).className = "";
+		nav = Math.max(nav - 1, 1);
+		console.log("Nav is now " + nav.toString())
+		document.getElementById("nav" + nav.toString()).className = "active";
+
+		if (nav == 1) {
+			load_intro()
+		} else if (nav == 2){
+			load_90s();
+		} else if (nav == 3){
+			load_2000s();
+		} else if (nav == 4) {
+			load_2010s();
+		} else {
+			load_conclusion();
+		}
+	}
+	function next(){
+		document.getElementById("nav" + nav.toString()).className = "";
+		document.getElementById("nav" + nav.toString()).className = "";
+		nav = Math.min(nav + 1, 5);
+		console.log("Nav is now " + nav.toString());
+		document.getElementById("nav" + nav.toString()).className = "active";
+		
+		if (nav == 1) {
+			load_intro()
+		} else if (nav == 2){
+			load_90s();
+		} else if (nav == 3){
+			load_2000s();
+		} else if (nav == 4) {
+			load_2010s();
+		} else {
+			load_conclusion();
+		}
+	}
+	function navElementClicked(id){
+		document.getElementById("nav" + id.toString()).className = "active";
+		document.getElementById("nav" + nav.toString()).className = "";
+		nav = parseInt(id);
+
+		if (nav == 1) {
+			load_intro()
+		} else if (nav == 2){
+			load_90s();
+		} else if (nav == 3){
+			load_2000s();
+		} else if (nav == 4) {
+			load_2010s();
+		} else {
+			load_conclusion();
+		}
+	}
+	async function salaryCapPress() {
+		if (nav == 2){
+			var data = await d3.csv('https://raw.githubusercontent.com/ssridha5/narrative-visualization/master/NBA_Team_Salaries_90s.csv');
+			var ys = d3.scaleLinear().domain([2000000,50000000]).range([275,0]);
+			d3.select("svg").append("g").selectAll("rect").data(data).enter().append("rect")
+			.attr("x", function(d,i){ return 75 + (36.2*i);})
+			.attr("y", function(d){return ys(d['Salary Cap']);})
+			.attr("width", function(d){ return 25;})
+			.attr("height", function(d){return 2;})
+			.attr("fill", "black")
+			.transition(3000)
+			.attr("fill", "red");
+		} else if (nav == 3){
+			var data = await d3.csv('https://raw.githubusercontent.com/ssridha5/narrative-visualization/master/NBA_Team_Salaries_00s.csv');
+			var ys = d3.scaleLinear().domain([2000000,100000000]).range([275,0]);
+			d3.select("svg").append("g").selectAll("rect").data(data).enter().append("rect")
+			.attr("x", function(d,i){ return 75 + (36.2*i);})
+			.attr("y", function(d){return ys(d['Salary Cap']);})
+			.attr("width", function(d){ return 25;})
+			.attr("height", function(d){return 2;})
+			.attr("fill", "black")
+			.transition(3000)
+			.attr("fill", "red");
+		} else if (nav == 4){
+			var data = await d3.csv('https://raw.githubusercontent.com/ssridha5/narrative-visualization/master/NBA_Team_Salaries_10s.csv');
+			var ys = d3.scaleLinear().domain([2000000,120000000]).range([275,0]);
+			d3.select("svg").append("g").selectAll("rect").data(data).enter().append("rect")
+			.attr("x", function(d,i){ return 77 + (39*i);})
+			.attr("y", function(d){return ys(d['Salary Cap']);})
+			.attr("width", function(d){ return 25;})
+			.attr("height", function(d){return 2;})
+			.attr("fill", "black")
+			.transition(3000)
+			.attr("fill", "red");
+		}
+	}
+</script>
+
+<script>
+async function init() {
+	load_intro()
+}
+
+async function load_intro() {
+	var x = document.getElementById("maintext")
+	x.innerHTML = "Welcome! This narrative visualization is meant to give some insight into NBA Team and Player Salary Info! Press the next arrow to continue!";
+	var y = document.getElementById("chartdiv");
+	y.style.display="none";
+	var y = document.getElementById("leftchartlabel");
+	y.style.display="none";
+	var y = document.getElementById("rightchartlabel");
+	y.style.display="none";
+	var y = document.getElementById("salarycapbuttonleft");
+	y.style.display="none";
+}
+
+async function load_90s() {
+	var x = document.getElementById("maintext")
+	x.innerHTML = "The 1990s! The time of Mike, Magic, and Malone! Player salaries are exponentially growing. You can press the button below the left bar chart to show how these salaries compare to the salary cap in each year. The top player salaries of the 90s are also shown!";
+	var y = document.getElementById("chartdiv");
+	y.style.display="block";
+	var y = document.getElementById("leftchartlabel");
+	y.style.display="block";
+	var y = document.getElementById("rightchartlabel");
+	y.style.display="block";
+	var y = document.getElementById("salarycapbuttonleft");
+	y.style.display="block";
+	d3.selectAll("svg > *").remove();
+	var data = await d3.csv('https://raw.githubusercontent.com/ssridha5/narrative-visualization/master/NBA_Team_Salaries_90s.csv');
+	var xs = d3.scaleLinear().domain([1989,2000]).range([0,400]);
+	var ys = d3.scaleLinear().domain([2000000,50000000]).range([275,0]);
+
+	d3.select("svg").append("g").selectAll("rect").data(data).enter().append("rect")
+	.attr("x", function(d,i){ return 75 + (36.2*i);})
+	.attr("y", function(d){return 275;})
+	.attr("width", function(d){ return 25;})
+	.attr("height", function(d){return 0;})
+	.transition().duration(3000)
+	.attr("y", function(d){return ys(d['Total Salary']);})
+	.attr("height", function(d){return 275 - ys(d['Total Salary']);})
+	.attr("fill", "lightgray")
+	.attr("stroke", "black");
+
+	d3.selectAll("svg").selectAll("rect").append("svg:title").text(function(d) { return "Average Total Team Salary: " + d['Total Salary'] + ", Salary Cap: " + d['Salary Cap']; });
+
+	d3.select("svg").append("g").attr("transform", "translate(50,0)").call(d3.axisLeft(ys).tickValues([5000000,15000000,25000000,35000000,45000000,]).tickFormat(d3.format("~s")));
+	d3.select("svg").append("g").attr("transform", "translate(50,275)").call(d3.axisBottom(xs).tickValues([1990,1991,1992,1993,1994,1995,1996,1997,1998,1999]).tickFormat(d3.format("d")));
+
+	var data2 = await d3.csv('https://raw.githubusercontent.com/ssridha5/narrative-visualization/master/NBA_Player_Salaries_90s.csv');
+	var xs2 = d3.scaleLinear().domain([0,27]).range([0,400]);
+	var ys2 = d3.scaleLinear().domain([2000000,35000000]).range([275,0]);
+
+	var div = d3.select("body").append("div")
+     .style("opacity", 0);
+
+	d3.select("svg.rightchart").append("g").selectAll("rect").data(data2).enter().append("rect")
+	.attr("x", function(d,i){ return 55 + (15*i);})
+	.attr("y", function(d){return 275;})
+	.attr("width", function(d){ return 250/26;})
+	.attr("height", function(d){return 0;})
+	.transition().duration(3000)
+	.attr("y", function(d){return ys2(d['Salary']);})
+	.attr("height", function(d){return 275 - ys2(d['Salary']);})
+	.attr("fill", "green")
+	.attr("stroke", "black");
+
+	d3.selectAll("svg.rightchart").selectAll("rect").append("svg:title").text(function(d) { return "Player: " + d['Player'] + ", Salary: " + d['Salary']; });
+
+	d3.select("svg.rightchart").append("g").attr("transform", "translate(50,0)").call(d3.axisLeft(ys2).tickValues([5000000,10000000,20000000,30000000]).tickFormat(d3.format("~s")));
+	d3.select("svg.rightchart").append("g").attr("transform", "translate(50,275)").call(d3.axisBottom(xs2).tickValues([]));
+
+}
+
+async function load_2000s() {
+	var x = document.getElementById("maintext")
+	x.innerHTML = "The 2000s! Kobe, Shaq, and Lebron time! The exponential team salary growth seems to have cooled a little. Move your mouse over the bars in the right chart to sees which players make the most!";
+	var y = document.getElementById("chartdiv");
+	y.style.display="block";
+	var y = document.getElementById("leftchartlabel");
+	y.style.display="block";
+	var y = document.getElementById("rightchartlabel");
+	y.style.display="block";
+	var y = document.getElementById("salarycapbuttonleft");
+	y.style.display="block";
+	d3.selectAll("svg > *").remove();
+	var data = await d3.csv('https://raw.githubusercontent.com/ssridha5/narrative-visualization/master/NBA_Team_Salaries_00s.csv');
+	var xs = d3.scaleLinear().domain([1999,2010]).range([0,400]);
+	var ys = d3.scaleLinear().domain([2000000,100000000]).range([275,0]);
+
+	d3.select("svg").append("g").selectAll("rect").data(data).enter().append("rect")
+	.attr("x", function(d,i){ return 75 + (36.2*i);})
+	.attr("y", function(d){return 275;})
+	.attr("width", function(d){ return 25;})
+	.attr("height", function(d){return 0;})
+	.transition().duration(3000)
+	.attr("y", function(d){return ys(d['Total Salary']);})
+	.attr("height", function(d){return 275 - ys(d['Total Salary']);})
+	.attr("fill", "lightgray")
+	.attr("stroke", "black");
+
+	d3.selectAll("svg").selectAll("rect").append("svg:title").text(function(d) { return "Average Total Team Salary: " + d['Total Salary'] + ", Salary Cap: " + d['Salary Cap']; });
+
+	d3.select("svg").append("g").attr("transform", "translate(50,0)").call(d3.axisLeft(ys).tickValues([15000000,35000000,55000000,75000000,95000000,]).tickFormat(d3.format("~s")));
+	d3.select("svg").append("g").attr("transform", "translate(50,275)").call(d3.axisBottom(xs).tickValues([2000,2001,2002,2003,2004,2005,2006,2007,2008,2009]).tickFormat(d3.format("d")));
+
+	var data2 = await d3.csv('https://raw.githubusercontent.com/ssridha5/narrative-visualization/master/NBA_Player_Salaries_00s.csv');
+	var xs2 = d3.scaleLinear().domain([0,27]).range([0,400]);
+	var ys2 = d3.scaleLinear().domain([2000000,35000000]).range([275,0]);
+
+	d3.select("svg.rightchart").append("g").selectAll("rect").data(data2).enter().append("rect")
+	.attr("x", function(d,i){ return 55 + (18*i);})
+	.attr("y", function(d){return 275;})
+	.attr("width", function(d){ return 250/18;})
+	.attr("height", function(d){return 0;})
+	.transition().duration(3000)
+	.attr("y", function(d){return ys2(d['Salary']);})
+	.attr("height", function(d){return 275 - ys2(d['Salary']);})
+	.attr("fill", "green")
+	.attr("stroke", "black");
+
+	d3.selectAll("svg.rightchart").selectAll("rect").append("svg:title").text(function(d) { return "Player: " + d['Player'] + ", Salary: " + d['Salary']; });
+
+	d3.select("svg.rightchart").append("g").attr("transform", "translate(50,0)").call(d3.axisLeft(ys2).tickValues([5000000,10000000,20000000,30000000]).tickFormat(d3.format("~s")));
+	d3.select("svg.rightchart").append("g").attr("transform", "translate(50,275)").call(d3.axisBottom(xs2).tickValues([]));
+
+}
+
+async function load_2010s() {
+	var x = document.getElementById("maintext")
+	x.innerHTML = "The 2010s! More Lebron, A Golden State dynasty, and the globalization of the NBA. Looks like ome of the increased revenue from globalization might be falling into the pockets of some teams and players!";
+	var y = document.getElementById("chartdiv");
+	y.style.display="block";
+	var y = document.getElementById("leftchartlabel");
+	y.style.display="block";
+	var y = document.getElementById("rightchartlabel");
+	y.style.display="block";
+	var y = document.getElementById("salarycapbuttonleft");
+	y.style.display="block";
+	d3.selectAll("svg > *").remove();
+	var data = await d3.csv('https://raw.githubusercontent.com/ssridha5/narrative-visualization/master/NBA_Team_Salaries_10s.csv');
+	var xs = d3.scaleLinear().domain([2009,2018]).range([0,350]);
+	var ys = d3.scaleLinear().domain([2000000,120000000]).range([275,0]);
+
+	d3.select("svg").append("g").selectAll("rect").data(data).enter().append("rect")
+	.attr("x", function(d,i){ return 77 + (39*i);})
+	.attr("y", function(d){return 275;})
+	.attr("width", function(d){ return 25;})
+	.attr("height", function(d){return 0;})
+	.transition().duration(3000)
+	.attr("y", function(d){return ys(d['Total Salary']);})
+	.attr("height", function(d){return 275 - ys(d['Total Salary']);})
+	.attr("fill", "lightgray")
+	.attr("stroke", "black");
+
+	d3.selectAll("svg").selectAll("rect").append("svg:title").text(function(d) { return "Average Total Team Salary: " + d['Total Salary'] + ", Salary Cap: " + d['Salary Cap']; });
+
+	d3.select("svg").append("g").attr("transform", "translate(50,0)").call(d3.axisLeft(ys).tickValues([15000000,35000000,55000000,75000000,95000000,115000000]).tickFormat(d3.format("~s")));
+	d3.select("svg").append("g").attr("transform", "translate(50,275)").call(d3.axisBottom(xs).tickValues([2010,2011,2012,2013,2014,2015,2016,2017]).tickFormat(d3.format("d")));
+
+	var data2 = await d3.csv('https://raw.githubusercontent.com/ssridha5/narrative-visualization/master/NBA_Player_Salaries_10s.csv');
+	var xs2 = d3.scaleLinear().domain([0,27]).range([0,400]);
+	var ys2 = d3.scaleLinear().domain([2000000,35000000]).range([275,0]);
+
+	d3.select("svg.rightchart").append("g").selectAll("rect").data(data2).enter().append("rect")
+	.attr("x", function(d,i){ return 55 + (13*i);})
+	.attr("y", function(d){return 275;})
+	.attr("width", function(d){ return 250/28;})
+	.attr("height", function(d){return 0;})
+	.transition().duration(3000)
+	.attr("y", function(d){return ys2(d['Salary']);})
+	.attr("height", function(d){return 275 - ys2(d['Salary']);})
+	.attr("fill", "green")
+	.attr("stroke", "black");
+
+	d3.selectAll("svg.rightchart").selectAll("rect").append("svg:title").text(function(d) { return "Player: " + d['Player'] + ", Salary: " + d['Salary']; });
+
+	d3.select("svg.rightchart").append("g").attr("transform", "translate(50,0)").call(d3.axisLeft(ys2).tickValues([5000000,10000000,20000000,30000000]).tickFormat(d3.format("~s")));
+	d3.select("svg.rightchart").append("g").attr("transform", "translate(50,275)").call(d3.axisBottom(xs2).tickValues([]));
+
+}
+
+async function load_conclusion() {
+	var x = document.getElementById("maintext")
+	x.innerHTML = "Over the decades, the NBA has grown and so has its payroll. Teams are playing more than ever to players. Individual players are also making larger sums of money than ever before! The 2010s and 1990s experienced exponential growth for teams' total salaries, resulting in them paying a massive luxury taxes! It'll be interesting to see if NBA front offices continue this trend...";
+	var y = document.getElementById("chartdiv");
+	y.style.display="none";
+	var y = document.getElementById("leftchartlabel");
+	y.style.display="none";
+	var y = document.getElementById("rightchartlabel");
+	y.style.display="none";
+	var y = document.getElementById("salarycapbuttonleft");
+	y.style.display="none";
+}
+</script>
+</body>
+</html>
